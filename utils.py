@@ -12,7 +12,6 @@ from PIL import Image
 import glob2
 import pandas as pd
 
-from torch.optim.lr_scheduler import OneCycleLR
 import torch.optim as optim
 
 import numpy as np
@@ -23,9 +22,6 @@ import json
 import os
 
 import wandb
-
-from torch_lr_finder import LRFinder
-
 
 
 train_losses = []
@@ -113,7 +109,7 @@ def get_summary(model, device):
       model (torch.nn Model): 
       device (str): cuda/CPU
   """
-  print(summary(model.to(device), input_size=(3, 64, 64)))
+  print(summary(model.to(device), input_size=(3, 224, 224)))
 
 
 def get_stats(images_array):
@@ -294,9 +290,9 @@ def train_model(model, criterion, device, train_loader, val_loader, optimizer, s
             "Valid Acc": test_acc[-1]
         })
 
-    results = [train_losses, test_losses, train_acc, test_acc]
+  results = [train_losses, test_losses, train_acc, test_acc]
 
-    return(results)
+  return(results)
 
 
   for epoch in range(EPOCHS):
