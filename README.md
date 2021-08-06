@@ -576,22 +576,3 @@ class ViTModel():
 
 ## ViTModel
 Puts everything together 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-> Written with [StackEdit](https://stackedit.io/).
