@@ -1,18 +1,13 @@
-from models.resnet import *
+from __future__ import print_function
 from utils import *
 
 from sklearn.model_selection import train_test_split
 
 
-from torch.optim.lr_scheduler import StepLR, OneCycleLR
 import torch.nn as nn
 import torch.optim as optim
 
 import argparse
-
-from sklearn.preprocessing import LabelEncoder
-from sklearn.utils import class_weight
-
 import wandb
 
 
@@ -26,6 +21,12 @@ from torch.utils.data import DataLoader, Dataset
 import opendatasets as od
 
 
+from linformer import Linformer   
+from itertools import chain   
+from vit_pytorch.efficient import ViT   
+from tqdm.notebook import tqdm   
+
+
 import glob2
 import os
 import random
@@ -36,6 +37,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import cv2
 
+import zipfile
 
 
 import albumentations as A
@@ -56,6 +58,9 @@ if __name__ == "__main__":
 
     od.download(dataset_url)
 
+    path_to_zip_file = "/content/ViTCatsVDogs/dogs-vs-cats-redux-kernels-edition/train.zip"
+    directory_to_extract_to = "/content/ViTCatsVDogs/dataset"
+
     args = parser.parse_args()
     json_path = os.path.join(args.model_dir, "PARAMS.JSON")
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
@@ -66,8 +71,16 @@ if __name__ == "__main__":
             data = json.load(f)
         wandb.config.update(data)
 
+    if not os.path.isdir(params.train_path):
+      print("Not extracted yet")
+
+      with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+          zip_ref.extractall(directory_to_extract_to)
+
     file_list = glob2.glob(os.path.join(params.train_path, "*.jpg"))
     labels = [l.split("/")[-1].split(".")[0] for l in file_list]
+
+    print(file_list[0])
 
     data = pd.DataFrame({
         "file_names": file_list, 
@@ -95,7 +108,6 @@ if __name__ == "__main__":
     )
 
     print("[INFO] labels length:", len(labels))
-    print("[INFO] Label Encoding:", labelEncoder.classes_)
 
     print(f"----------Load and Transform Images----------")
     train_tranform = get_train_transforms(params.HEIGHT,
